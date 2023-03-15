@@ -118,17 +118,36 @@ pub fn get_font_url(rule: &FontFaceRule) -> Option<UrlData> {
     None
 }
 
-pub fn get_url_data(css_str: &str) -> MyResult<Vec<UrlData>> {
+#[derive(Debug)]
+pub struct GetUrlDataError {
+    v: String,
+}
+
+impl std::fmt::Display for GetUrlDataError {
+    #[inline]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.v, f)
+    }
+}
+
+impl Error for GetUrlDataError {}
+
+pub fn get_url_data(css_str: String) -> MyResult<Vec<UrlData>> {
     let mut font_urls: Vec<UrlData> = Vec::new();
-    let stylesheet = StyleSheet::parse(css_str, ParserOptions::default()).unwrap();
+
+    let stylesheet =
+        StyleSheet::parse(&css_str, ParserOptions::default()).map_err(|err| GetUrlDataError {
+            v: format!("CSS Parsing Error: {}", err),
+        })?;
 
     for rule in &stylesheet.rules.0 {
         if let FontFace(ff_rule) = rule {
             if let Some(url) = get_font_url(ff_rule) {
-                font_urls.push(url);
+                font_urls.push(url.clone());
             }
         }
     }
+
     Ok(font_urls)
 }
 

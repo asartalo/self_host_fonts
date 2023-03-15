@@ -1,8 +1,10 @@
 use clap::Parser;
+use minreq::Response;
 use shfonts::{Cli, MyResult};
 use shfonts::{LinesWithEndings, UrlByLine};
 use std::collections::HashMap;
 use std::env;
+use std::fmt;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
@@ -13,6 +15,27 @@ fn get_output_dir(cli: &Cli) -> MyResult<PathBuf> {
         Some(dir) => Ok(dir.clone()),
         None => Ok(env::current_dir()?),
     }
+}
+
+#[derive(Debug)]
+struct NotFoundError {
+    url: String,
+}
+
+impl std::error::Error for NotFoundError {}
+impl fmt::Display for NotFoundError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "CSS File Not Found: {}", self.url)
+    }
+}
+
+fn check_response(response: &Response, path: &str) -> Result<(), NotFoundError> {
+    if response.status_code == 404 {
+        return Err(NotFoundError {
+            url: path.to_string(),
+        });
+    }
+    Ok(())
 }
 
 fn run() -> MyResult<()> {
@@ -30,9 +53,11 @@ fn run() -> MyResult<()> {
 
     println!("Loading {}", path);
     let css_response = request.send()?;
+    check_response(&css_response, path)?;
+
     let css_str = css_response.as_str()?;
 
-    let font_urls = shfonts::get_url_data(css_str)?;
+    let font_urls = shfonts::get_url_data(css_str.to_owned())?;
 
     println!("Found {} font declarations", font_urls.len());
     let css_url = Url::parse(path)?;
