@@ -6,11 +6,12 @@ use std::path::PathBuf;
     author = "Wayne Duran <asartalo@gmail.com>",
     version = "0.1.0",
     about = "Download fonts for self-hosting",
-    long_about = None
+    long_about = None,
 )]
 pub(crate) struct Cli {
     pub css_path: String,
 
+    // causes https://rust-lang.github.io/rust-clippy/master/index.html#almost_swapped
     #[arg(short = 'd', long = "dir", value_name = "DIRECTORY")]
     pub dir: Option<PathBuf>,
 
