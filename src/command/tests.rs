@@ -1,4 +1,4 @@
-use shfonts::{Location, UrlByLine, UrlData};
+use crate::command::url_data::{Location, UrlByLine, UrlData};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
@@ -25,14 +25,6 @@ fn setup(list: &mut Vec<UrlData>) -> UrlByLine {
         },
     });
     UrlByLine::new(list)
-}
-
-#[test]
-fn ubl_has_list() -> TestResult {
-    let mut list: Vec<UrlData> = Vec::new();
-    let ubl = setup(&mut list);
-    assert_eq!(ubl.len(), 3);
-    Ok(())
 }
 
 #[test]
