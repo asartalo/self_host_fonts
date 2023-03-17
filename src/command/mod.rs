@@ -41,24 +41,11 @@ pub(crate) fn run() -> CommonResult<()> {
 
     println!("Found {} font declarations", font_urls.len());
     let css_url = Url::parse(path)?;
-    let base = http::base_url(&css_url)?;
     let mut replacements: HashMap<&String, String> = HashMap::new();
 
     for font_url_data in &font_urls {
         let font_url = &font_url_data.url;
-        let full_url = if font_url.starts_with("http://") || font_url.starts_with("https://") {
-            Url::parse(font_url)?
-        } else if font_url.starts_with('/') && !font_url.starts_with("//") {
-            let stripped = match font_url.strip_prefix('/') {
-                Some(str) => str,
-                None => font_url,
-            };
-            Url::parse(&(base.as_str().to_owned() + stripped))?
-        } else {
-            let base_url = Url::parse(path)?;
-            base_url.join(font_url)?;
-            base_url
-        };
+        let full_url = http::get_full_url(font_url, &css_url)?;
 
         println!("Downloading {}", full_url);
         let file_name = http::download_file(full_url, &output_dir)?;

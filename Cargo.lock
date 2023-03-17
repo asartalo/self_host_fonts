@@ -1953,6 +1953,7 @@ dependencies = [
  "clap",
  "cssparser",
  "httpmock",
+ "itertools",
  "lightningcss",
  "minreq",
  "predicates",

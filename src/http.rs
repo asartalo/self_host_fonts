@@ -1,9 +1,11 @@
 use crate::result::CommonResult;
+use itertools::Itertools;
 use minreq::Response;
 use rand::distributions::{Alphanumeric, DistString};
 use std::fmt;
 use std::fs;
 use std::io::Write;
+use std::iter::DoubleEndedIterator;
 use std::path::Path;
 use url::Url;
 
@@ -49,6 +51,34 @@ fn check_response(response: &Response, path: &str) -> Result<(), NotFoundError> 
         });
     }
     Ok(())
+}
+
+fn concat_paths<'a>(from: &'a str, relative_path: &'a str) -> String {
+    let mut base_path_parts = from.split('/');
+
+    base_path_parts.next_back();
+
+    format!("{}{}{}", base_path_parts.join("/"), "/", relative_path)
+}
+
+pub(crate) fn get_full_url(font_url: &str, css_url: &Url) -> CommonResult<Url> {
+    let full_url = if font_url.starts_with("http://") || font_url.starts_with("https://") {
+        Url::parse(font_url)?
+    } else if font_url.starts_with('/') && !font_url.starts_with("//") {
+        let base = base_url(css_url)?;
+        let stripped = match font_url.strip_prefix('/') {
+            Some(str) => str,
+            None => font_url,
+        };
+        Url::parse(&(base.as_str().to_owned() + stripped))?
+    } else {
+        let mut base_url = css_url.clone();
+        base_url.set_path(&concat_paths(base_url.path(), font_url));
+        base_url.join(font_url)?;
+        base_url
+    };
+
+    Ok(full_url)
 }
 
 pub(crate) fn get_css_file(path: &str) -> CommonResult<Response> {

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.1.6", features = ["derive"] }
 cssparser = "0.29.6"
+itertools = "0.10.5"
 lightningcss = "1.0.0-alpha.40"
 minreq = { version = "2.6.0", features = ["https-rustls"] }
 rand = "0.8.5"
