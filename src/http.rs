@@ -33,22 +33,29 @@ fn url_file_name(url: &Url) -> String {
 }
 
 #[derive(Debug)]
-struct NotFoundError {
-    url: String,
+enum CssResponseError {
+    NotFoundError { url: String },
+    ServerError { url: String },
 }
 
-impl std::error::Error for NotFoundError {}
-impl fmt::Display for NotFoundError {
+impl std::error::Error for CssResponseError {}
+
+impl fmt::Display for CssResponseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "CSS File Not Found: {}", self.url)
+        match self {
+            Self::NotFoundError { url } => write!(f, "CSS File Not Found: {}", url),
+            Self::ServerError { url } => write!(f, "Error retrieving CSS file: {}", url),
+        }
     }
 }
 
-fn check_response(response: &Response, path: &str) -> Result<(), NotFoundError> {
-    if response.status_code == 404 {
-        return Err(NotFoundError {
-            url: path.to_string(),
-        });
+fn check_response(response: &Response, path: &str) -> Result<(), CssResponseError> {
+    let status = response.status_code;
+    let url = path.to_string();
+    if status == 404 {
+        return Err(CssResponseError::NotFoundError { url });
+    } else if status >= 400 {
+        return Err(CssResponseError::ServerError { url });
     }
     Ok(())
 }
