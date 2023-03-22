@@ -9,17 +9,18 @@ Coming soon...
 
 ## Usage
 
-Basic usage:
+For basic usage, pass in the URL of the CSS font declaration of the hosting
+site:
 
 ```sh
 shfonts "https://fonts.googleapis.com/css?family=Roboto:300"
 ```
 
-The previous command will download all the font files specified in the current
-working directory. It will also create a CSS file with contents copied from the
-original CSS file from the URL with the font src `url()` replaced with the file
-names of the font files. For example, if the content of the CSS file above is
-the following:
+Assuming that the URL passed is a CSS file with `@font-face` declarations, the
+previous command will download all the font files specified inside it. It will
+also write a CSS file with contents copied from that CSS file replacing the font
+URLs declared in `@font-face > src` `url()` with the file names of the font
+files. For example, if the content of the CSS file above is the following:
 
 ```css
 /* latin */
@@ -47,7 +48,7 @@ the following:
 
 ### Setting a Download Directory
 
-If you want to save the font files and the css file to a different directory,
+If you want to save the font files and the CSS file to a different directory,
 use `--dir` or `-d` option:
 
 ```sh
