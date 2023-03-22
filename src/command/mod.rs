@@ -33,22 +33,28 @@ pub(crate) fn run() -> CommonResult<()> {
     let font_url_prefix = &cli.font_url_prefix;
     let output_dir = get_output_dir(&cli)?;
 
-    println!("Loading {}", path);
+    println!("\nLoading {}", path);
     let css_response = http::get_css_file(path)?;
     let css_str = css_response.as_str()?;
 
     let font_urls = get_url_data(css_str.to_owned())?;
+    let count = font_urls.len();
 
-    println!("Found {} font declarations", font_urls.len());
     let css_url = Url::parse(path)?;
     let mut replacements: HashMap<&String, String> = HashMap::new();
 
+    let mut current = 0;
+
+    let pluralized = if count > 1 { "file" } else { "files" };
+    println!("Downloading {} font {}", count, pluralized);
     for font_url_data in &font_urls {
+        current += 1;
         let font_url = &font_url_data.url;
         let full_url = http::get_full_url(font_url, &css_url)?;
-
-        println!("Downloading {}", full_url);
+        let url_str = full_url.to_string();
         let file_name = http::download_file(full_url, &output_dir)?;
+
+        println!(" {}/{}\t{}", current, count, url_str);
         replacements.insert(font_url, format!("{}{}", font_url_prefix, file_name));
     }
 
@@ -80,6 +86,8 @@ pub(crate) fn run() -> CommonResult<()> {
             css_file.write_all(line.as_bytes())?;
         }
     }
+
+    println!("Done.");
 
     Ok(())
 }
