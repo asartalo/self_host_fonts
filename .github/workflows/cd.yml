@@ -10,6 +10,7 @@ on:
 jobs:
   binary:
     name: Publish binary for ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: hecrj/setup-rust-action@v1
