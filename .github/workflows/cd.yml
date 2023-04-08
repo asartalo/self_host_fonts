@@ -8,76 +8,28 @@ on:
     branches:
       - release
 jobs:
-  test:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+  binary:
+    name: Publish binary for ${{ matrix.os }}
 
-      - run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git config --global user.email github-actions@github.com
-          git config --global user.name github-actions
-      - name: Conventional commit check
+    steps:
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+
+      - uses: actions/checkout@v3
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Semver release
         uses: cocogitto/cocogitto-action@v3
+        id: release
         with:
-          git-user: 'github-actions'
-          git-user-email: 'github-actions@github.com'
+          release: true
+          git-user: 'Cog Bot'
+          git-user-email: 'asartalo@gmail.com'
 
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: llvm-tools-preview
-
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: llvm-cov
-          args: --all-features --workspace --lcov --output-path lcov.info
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: lcov.info
-          fail_ci_if_error: true
-
-      - uses: Swatinem/rust-cache@v1
-
-  lints:
-    name: Lints & Format
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: rustfmt, clippy
-
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        continue-on-error: false
-        with:
-          command: fmt
-          args: --all -- --check
-
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        continue-on-error: false
-        with:
-          command: clippy
-          args: -- -D warnings
-
-      - uses: Swatinem/rust-cache@v1
+      # The version number is accessible as a github action output
+      - name: Print version
+        run: "echo '${{ steps.release.outputs.version }}'"
