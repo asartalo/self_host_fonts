@@ -65,7 +65,7 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
       - name: Run cargo fmt
-        uses: actions-rs/cargo@v2
+        uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: fmt
