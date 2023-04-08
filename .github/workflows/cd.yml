@@ -28,7 +28,7 @@ jobs:
         id: release
         with:
           release: true
-          git-user: 'Cog Bot'
+          git-user: 'cogbot'
           git-user-email: 'asartalo@gmail.com'
 
       # The version number is accessible as a github action output
