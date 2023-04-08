@@ -1,36 +1,79 @@
+name: Continuous Integration
+
 on: [push]
 
-name: testbuild
-
 jobs:
-  testbuild:
+  test:
     name: Rust project
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Install latest beta
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+
+      - name: Conventional commit check
+        uses: cocogitto/cocogitto-action@v3
+        with:
+          git-user: 'github-actions'
+          git-user-email: 'github-actions@github.com'
+
+      - name: Install latest stable
         uses: ructions/toolchain@v1
         with:
             toolchain: stable
             override: true
-            components: rustfmt, clippy
+            components: llvm-tools-preview
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Check rust version check
-        run: rustc --version
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: llvm-cov
+          args: --all-features --workspace --lcov --output-path lcov.info
+
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "lcov.info"
+
+  lints:
+    name: Lints & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v2
+        continue-on-error: false
+        with:
+          command: fmt
+          args: --all -- --check
 
       - name: Run cargo clippy
-        run: cargo clippy --all-targets -- -D warnings
-
-      # `cargo check` command here will use installed `nightly`
-      # as it is set as an "override" for current directory
-      - name: Run cargo check
-        uses: ructions/cargo@v1
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
         with:
-          command: check
-
-      - name: Run cargo test
-        run: cargo test
+          command: clippy
+          args: -- -D warnings
