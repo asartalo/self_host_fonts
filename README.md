@@ -1,5 +1,5 @@
 # shfonts
-
+[![CI](https://github.com/asartalo/shfonts/actions/workflows/ci.yml/badge.svg)](https://github.com/asartalo/shfonts/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/asartalo/shfonts/badge.svg?branch=main)](https://coveralls.io/github/asartalo/shfonts?branch=main)
 
 Command line tool to download fonts from third-party font hosting sites for
