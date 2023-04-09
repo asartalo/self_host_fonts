@@ -40,6 +40,7 @@ jobs:
       #       components: cargo-edit
 
       - name: Install cargo-edit
+        if: steps.version_commit.outputs.value != 'yes'
         run: |
           cargo install cargo-edit
 
@@ -72,6 +73,9 @@ jobs:
           echo "checkout release"
           git checkout release
 
+      - name: Generate Changelog
+        run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
+
       - name: Create Release
         if: steps.version_commit.outputs.value != 'yes'
         id: createRelease
@@ -80,3 +84,11 @@ jobs:
           tag: ${{ steps.release.outputs.version }}
           name: Release ${{ steps.release.outputs.version }}
           token: ${{ secrets.PAT }}
+          bodyFile: GITHUB_CHANGELOG.md
+
+      - name: Publish Crate
+        if: steps.version_commit.outputs.value != 'yes'
+        run: |
+          cargo login ${{secrets.CARGO_TOKEN}}
+          cargo publish
+

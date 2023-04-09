@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: Rust project
+    name: Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -22,6 +22,7 @@ jobs:
         run: |
           msg=`git --no-pager log -1 --format="format:%s" --no-decorate`
           version_commit=`if [[ $msg == "chore(version):"* ]]; then echo "yes"; else echo "no"; fi`
+          echo "version_commit: ${version_commit}"
           echo "value=${version_commit}" >> $GITHUB_OUTPUT
 
       - run: |

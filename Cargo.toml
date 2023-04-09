@@ -1,7 +1,12 @@
 [package]
 name = "shfonts"
+description = "Download fonts from font-hosting sites for self-hosting."
 version = "0.1.0"
 edition = "2021"
+license-file = "LICENSE"
+readme = "README.md"
+homepage = "https://github.com/asartalo/shfonts"
+repository = "https://github.com/asartalo/shfonts"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
