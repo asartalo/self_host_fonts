@@ -56,13 +56,16 @@ jobs:
         if: steps.version_commit.outputs.value != 'yes'
         run: |
           echo ${{ steps.release.outputs.version }}
-          git --no-pager branch
+          git --no-pager status
+          git --no-pager log -2
           git --no-pager diff
           git commit -m "chore(version): ${{ steps.release.outputs.version }}"
+          git rebase main
+          git push
+          git checkout main
+          git merge release
           git push
           git checkout release
-          git rebase main
-          git checkout main
 
       - name: Create Release
         if: steps.version_commit.outputs.value != 'yes'
