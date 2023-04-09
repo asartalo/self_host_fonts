@@ -60,11 +60,17 @@ jobs:
           git --no-pager log -2
           git --no-pager diff
           git commit -m "chore(version): ${{ steps.release.outputs.version }}"
+          echo "Rebasing main"
           git rebase main
+          echo "Pushing changes"
           git push origin
+          echo "checkout main"
           git checkout main
+          echo "merge release"
           git merge release
+          echo "push origin"
           git push origin
+          echo "checkout release"
           git checkout release
 
       - name: Create Release
