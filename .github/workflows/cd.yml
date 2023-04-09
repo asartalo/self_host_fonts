@@ -57,9 +57,7 @@ jobs:
         run: |
           echo ${{ steps.release.outputs.version }}
           git --no-pager status
-          git --no-pager log -2
-          git --no-pager diff
-          git commit -m "chore(version): ${{ steps.release.outputs.version }}"
+          git --no-pager log -3
           echo "Rebasing main"
           git rebase main
           echo "Pushing changes"
