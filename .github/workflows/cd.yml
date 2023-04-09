@@ -4,33 +4,65 @@ on:
   push:
     branches:
       - release
-  pull_request:
-    branches:
-      - release
+    paths:
+
 jobs:
   binary:
-    name: Publish binary for ${{ matrix.os }}
+    name: Setup for Release
     runs-on: ubuntu-latest
 
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
-
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
 
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Check if version commit message
+        id: version_commit
+        run: |
+          msg=`git --no-pager log -1 --format="format:%s" --no-decorate`
+          version_commit=`if [[ $msg == "chore(version):"* ]]; then echo "yes"; else echo "no"; fi`
+          echo "value=${version_commit}" >> $GITHUB_OUTPUT
+
+      - uses: Swatinem/rust-cache@v1
+        if: steps.version_commit.outputs.value != 'yes'
+
+      - name: Install toolchain
+        if: steps.version_commit.outputs.value != 'yes'
+        run: rustup toolchain install stable --profile minimal
+
+
+      # - name: Install latest stable
+      #   if: steps.version_commit.outputs.value != 'yes'
+      #   uses: ructions/toolchain@v1
+      #   with:
+      #       toolchain: beta
+      #       override: true
+      #       components: cargo-edit
+
+      - name: Install cargo-edit
+        run: |
+          cargo install cargo-edit
 
       - name: Semver release
+        if: steps.version_commit.outputs.value != 'yes'
         uses: cocogitto/cocogitto-action@v3
         id: release
         with:
           release: true
-          git-user: 'cogbot'
-          git-user-email: 'asartalo@gmail.com'
+          git-user: 'github-actions'
+          git-user-email: 'github-actions@github.com'
 
-      # The version number is accessible as a github action output
-      - name: Print version
-        run: "echo '${{ steps.release.outputs.version }}'"
+      - name: After bump
+        if: steps.version_commit.outputs.value != 'yes'
+        run: |
+          echo v${{ steps.release.outputs.version }}
+
+      - name: Create Release
+        if: steps.version_commit.outputs.value != 'yes'
+        id: createRelease
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.release.outputs.version }}
+          name: Release ${{ steps.release.outputs.version }}
+          token: ${{ secrets.PAT }}

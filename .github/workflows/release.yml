@@ -19,12 +19,23 @@ jobs:
           - target: x86_64-apple-darwin
             archive: zip
     steps:
+      # - uses: hecrj/setup-rust-action@v1
+      #   with:
+      #     rust-version: stable
+
       - uses: actions/checkout@v3
 
-      # - name: Compile and release
-      #   uses: rust-build/rust-build.action@v1.4.3
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     RUSTTARGET: ${{ matrix.target }}
-      #     ARCHIVE_TYPES: ${{ matrix.archive }}
+      # - uses: Swatinem/rust-cache@v1
+      #
+      # - name: Get the version
+      #   id: version
+      #   run: |
+      #     echo "value=${cargo pkgid | cut -d \"#\" -f2}" >> $GITHUB_OUTPUT
+
+      - name: Compile and release
+        uses: rust-build/rust-build.action@v1.4.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          RUSTTARGET: ${{ matrix.target }}
+          ARCHIVE_TYPES: ${{ matrix.archive }}

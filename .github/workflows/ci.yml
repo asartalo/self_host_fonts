@@ -1,6 +1,11 @@
 name: Continuous Integration
 
-on: [push]
+on:
+  pull_request:
+    branches-ignore:
+      - 'release'
+
+  push:
 
 jobs:
   test:
@@ -12,6 +17,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check if version commit message
+        id: version_commit
+        run: |
+          msg=`git --no-pager log -1 --format="format:%s" --no-decorate`
+          version_commit=`if [[ $msg == "chore(version):"* ]]; then echo "yes"; else echo "no"; fi`
+          echo "value=${version_commit}" >> $GITHUB_OUTPUT
+
       - run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -19,12 +31,14 @@ jobs:
           git config --global user.name github-actions
 
       - name: Conventional commit check
+        if: steps.version_commit.outputs.value != 'yes'
         uses: cocogitto/cocogitto-action@v3
         with:
           git-user: 'github-actions'
           git-user-email: 'github-actions@github.com'
 
       - name: Install latest stable
+        if: steps.version_commit.outputs.value != 'yes'
         uses: ructions/toolchain@v1
         with:
             toolchain: stable
@@ -32,16 +46,20 @@ jobs:
             components: llvm-tools-preview
 
       - uses: Swatinem/rust-cache@v2
+        if: steps.version_commit.outputs.value != 'yes'
 
       - name: Install cargo-llvm-cov
+        if: steps.version_commit.outputs.value != 'yes'
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - uses: actions-rs/cargo@v1
+        if: steps.version_commit.outputs.value != 'yes'
         with:
           command: llvm-cov
           args: --all-features --workspace --lcov --output-path lcov.info
 
       - name: Coveralls Finished
+        if: steps.version_commit.outputs.value != 'yes'
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

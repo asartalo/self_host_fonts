@@ -1,12 +1,15 @@
-# File: cog.toml
+tag_prefix = "v"
+branch_whitelist = ["release"]
+ignore_merge_commits = true
+
 pre_bump_hooks = [
   "echo {{version}}",
+  "cargo set-version {{version}}"
 ]
 
-post_bump_hooks = [
-  "git push",
-  "git push origin {{version}}",
-]
+# post_bump_hooks = [
+#   "echo 'Ready to push'",
+# ]
 
 [changelog]
 path = "CHANGELOG.md"
