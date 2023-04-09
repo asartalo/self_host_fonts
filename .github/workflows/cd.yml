@@ -86,6 +86,9 @@ jobs:
           token: ${{ secrets.PAT }}
           bodyFile: GITHUB_CHANGELOG.md
 
+      - name: Remove Changelog
+        run: rm GITHUB_CHANGELOG.md
+
       - name: Publish Crate
         if: steps.version_commit.outputs.value != 'yes'
         run: |
