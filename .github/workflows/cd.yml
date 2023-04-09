@@ -31,7 +31,6 @@ jobs:
         if: steps.version_commit.outputs.value != 'yes'
         run: rustup toolchain install stable --profile minimal
 
-
       # - name: Install latest stable
       #   if: steps.version_commit.outputs.value != 'yes'
       #   uses: ructions/toolchain@v1
@@ -56,7 +55,14 @@ jobs:
       - name: After bump
         if: steps.version_commit.outputs.value != 'yes'
         run: |
-          echo v${{ steps.release.outputs.version }}
+          echo ${{ steps.release.outputs.version }}
+          git --no-pager branch
+          git --no-pager diff
+          git commit -m "chore(version): ${{ steps.release.outputs.version }}"
+          git push
+          git checkout release
+          git rebase main
+          git checkout main
 
       - name: Create Release
         if: steps.version_commit.outputs.value != 'yes'
