@@ -59,6 +59,7 @@ jobs:
           git --no-pager status
           git --no-pager log -3
           echo "Rebasing main"
+          git checkout -b main origin/main
           git rebase main
           echo "Pushing changes"
           git push origin
