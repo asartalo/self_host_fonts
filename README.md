@@ -7,7 +7,18 @@ self-hosting.
 
 ## Installation
 
-Coming soon...
+The quickest would be to download the binaries from the latest release from the
+[Release Page](https://github.com/asartalo/shfonts/releases). Pick the binary
+built for your OS.
+
+### Installing using Cargo
+
+If you have [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html),
+installed, you can install shfonts easily with:
+
+```sh
+cargo install shfonts
+```
 
 ## Usage
 
